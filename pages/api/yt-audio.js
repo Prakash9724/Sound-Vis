@@ -57,11 +57,23 @@ export default async function handler(req, res) {
     // Always send 200 OK (avoid partial content issues)
     res.status(200)
 
+    const commonHeaders = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept': '*/*',
+      'Origin': 'https://www.youtube.com',
+      'Referer': 'https://www.youtube.com/'
+    }
+
     const stream = ytdl(normalized, {
       quality: "highestaudio",
       filter: "audioonly",
       highWaterMark: 1 << 25,
       format: chosen,
+      requestOptions: {
+        headers: commonHeaders,
+        ...(req.headers.range ? { Range: req.headers.range } : {})
+      }
     })
 
     stream.on("error", (err) => {
@@ -71,7 +83,13 @@ export default async function handler(req, res) {
 
     stream.pipe(res)
   } catch (err) {
-    console.error("/pages/api/yt-audio error", err)
-    res.status(500).send(typeof err?.message === "string" ? err.message : "Failed to fetch audio")
+    console.error('/pages/api/yt-audio error', err)
+    res.status(500).send(err?.message || 'Failed to fetch audio')
+  }
+}
+
+export const config = {
+  api: {
+    responseLimit: false
   }
 } 

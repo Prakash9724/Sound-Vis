@@ -71,9 +71,11 @@ export default async function handler(req, res) {
       highWaterMark: 1 << 25,
       format: chosen,
       requestOptions: {
-        headers: commonHeaders,
-        ...(req.headers.range ? { Range: req.headers.range } : {})
-      }
+        headers: {
+          ...commonHeaders,
+          ...(req.headers.range ? { Range: req.headers.range } : {}),
+        },
+      },
     })
 
     stream.on("error", (err) => {
@@ -84,12 +86,13 @@ export default async function handler(req, res) {
     stream.pipe(res)
   } catch (err) {
     console.error('/pages/api/yt-audio error', err)
-    res.status(500).send(err?.message || 'Failed to fetch audio')
+    res.status(500).send(typeof err?.message === 'string' ? err.message : 'Failed to fetch audio')
   }
 }
 
 export const config = {
   api: {
-    responseLimit: false
-  }
+    responseLimit: false,
+    bodyParser: false,
+  },
 } 

@@ -22,57 +22,62 @@ export default function SongList({ songs, currentSong, onSelectSong, onRemoveSon
           </div>
         ) : (
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {songs.map((song, index) => (
-              <div
-                key={song.id}
-                className={`p-3 rounded-lg border transition-all duration-200 ${
-                  currentSong?.id === song.id
-                    ? "bg-purple-600/20 border-purple-500 shadow-lg shadow-purple-500/20"
-                    : "bg-slate-700/50 border-slate-600 hover:bg-slate-700 hover:border-slate-500"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center flex-1 min-w-0">
-                    <div className="flex-shrink-0 mr-3">
-                      {song.type === "local" ? (
-                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                          <Music className="w-4 h-4 text-white" />
-                        </div>
-                      ) : (
-                        <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
-                          <Youtube className="w-4 h-4 text-white" />
-                        </div>
-                      )}
+            {songs.map((song, index) => {
+              const isCurrent = currentSong?.id === song.id
+              return (
+                <div
+                  key={song.id}
+                  className={`p-3 rounded-lg border transition-all duration-200 ${
+                    isCurrent
+                      ? "bg-purple-600/20 border-purple-500 shadow-lg shadow-purple-500/20"
+                      : "bg-slate-700/50 border-slate-600 hover:bg-slate-700 hover:border-slate-500"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center flex-1 min-w-0">
+                      <div className="flex-shrink-0 mr-3">
+                        {song.type === "local" ? (
+                          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                            <Music className="w-4 h-4 text-white" />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
+                            <Youtube className="w-4 h-4 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-medium truncate">{song.title}</p>
+                        <p className="text-slate-400 text-sm">{song.type === "local" ? "Local File" : "YouTube Video"}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-medium truncate">{song.title}</p>
-                      <p className="text-slate-400 text-sm">{song.type === "local" ? "Local File" : "YouTube Video"}</p>
+                    <div className="flex items-center space-x-2 ml-2">
+                      <Button
+                        onClick={() => !isCurrent && onSelectSong(song)}
+                        size="sm"
+                        aria-disabled={isCurrent}
+                        disabled={isCurrent}
+                        className={
+                          isCurrent
+                            ? "bg-purple-700 cursor-not-allowed opacity-80"
+                            : "bg-purple-600 hover:bg-purple-700"
+                        }
+                      >
+                        {isCurrent ? "Playing" : "Play"}
+                      </Button>
+                      <Button
+                        onClick={() => onRemoveSong(song.id)}
+                        size="sm"
+                        variant="outline"
+                        className="border-slate-600 text-slate-400 hover:bg-red-600 hover:text-white hover:border-red-600"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-2 ml-2">
-                    <Button
-                      onClick={() => onSelectSong(song)}
-                      size="sm"
-                      className={
-                        currentSong?.id === song.id
-                          ? "bg-purple-700 hover:bg-purple-800"
-                          : "bg-purple-600 hover:bg-purple-700"
-                      }
-                    >
-                      {currentSong?.id === song.id ? "Playing" : "Play"}
-                    </Button>
-                    <Button
-                      onClick={() => onRemoveSong(song.id)}
-                      size="sm"
-                      variant="outline"
-                      className="border-slate-600 text-slate-400 hover:bg-red-600 hover:text-white hover:border-red-600"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </CardContent>

@@ -17,6 +17,8 @@ export default function Player({ currentSong, onAudioContextChange, onAnalyserCh
   const [volume, setVolume] = useState(50)
   const [isMuted, setIsMuted] = useState(false)
   const [youtubeReady, setYoutubeReady] = useState(false)
+  const [isBuffering, setIsBuffering] = useState(false)
+  const connectedFlagKey = useRef("wacConnected")
 
   const cleanupAudioContext = useCallback(() => {
     console.log("[v0] Cleaning up audio context")
@@ -59,6 +61,12 @@ export default function Player({ currentSong, onAudioContextChange, onAnalyserCh
         return
       }
 
+      // Avoid creating multiple sources for the same HTMLMediaElement lifetime
+      if (audioElement.dataset && audioElement.dataset[connectedFlagKey.current] === "1") {
+        console.log("[v0] Media element already connected; skipping source creation")
+        return
+      }
+
       console.log("[v0] Setting up audio context for new song")
 
       // Clean up any existing audio context first
@@ -81,6 +89,8 @@ export default function Player({ currentSong, onAudioContextChange, onAnalyserCh
             sourceNodeRef.current = source
             analyserRef.current = analyser
 
+            if (audioElement.dataset) audioElement.dataset[connectedFlagKey.current] = "1"
+
             onAudioContextChange(audioContext)
             onAnalyserChange(analyser)
 
@@ -102,8 +112,39 @@ export default function Player({ currentSong, onAudioContextChange, onAnalyserCh
     if (audioRef.current) {
       setDuration(audioRef.current.duration)
       setupAudioContext(audioRef.current)
+      setIsBuffering(false)
     }
   }, [setupAudioContext])
+
+  // Buffering state handlers for reliable UX
+  const attachBufferingHandlers = useCallback((el) => {
+    if (!el) return
+    const onCanPlay = () => setIsBuffering(false)
+    const onPlaying = () => setIsBuffering(false)
+    const onLoadedData = () => setIsBuffering(false)
+    const onWaiting = () => setIsBuffering(true)
+    const onError = () => setIsBuffering(false)
+    const onStalled = () => setIsBuffering(true)
+    const onAbort = () => setIsBuffering(false)
+
+    el.addEventListener("canplay", onCanPlay)
+    el.addEventListener("playing", onPlaying)
+    el.addEventListener("loadeddata", onLoadedData)
+    el.addEventListener("waiting", onWaiting)
+    el.addEventListener("error", onError)
+    el.addEventListener("stalled", onStalled)
+    el.addEventListener("abort", onAbort)
+
+    return () => {
+      el.removeEventListener("canplay", onCanPlay)
+      el.removeEventListener("playing", onPlaying)
+      el.removeEventListener("loadeddata", onLoadedData)
+      el.removeEventListener("waiting", onWaiting)
+      el.removeEventListener("error", onError)
+      el.removeEventListener("stalled", onStalled)
+      el.removeEventListener("abort", onAbort)
+    }
+  }, [])
 
   const handleTimeUpdate = useCallback(() => {
     if (audioRef.current) {
@@ -173,6 +214,7 @@ export default function Player({ currentSong, onAudioContextChange, onAnalyserCh
       newAudio.addEventListener("timeupdate", handleTimeUpdate)
       newAudio.addEventListener("play", handlePlay)
       newAudio.addEventListener("pause", handlePause)
+      attachBufferingHandlers(newAudio)
 
       // Set the source and load
       newAudio.src = currentSong.url
@@ -195,8 +237,10 @@ export default function Player({ currentSong, onAudioContextChange, onAnalyserCh
       el.addEventListener("timeupdate", handleTimeUpdate)
       el.addEventListener("play", handlePlay)
       el.addEventListener("pause", handlePause)
+      attachBufferingHandlers(el)
 
       const ytUrl = currentSong.url || (currentSong.videoId ? `https://www.youtube.com/watch?v=${currentSong.videoId}` : "")
+      setIsBuffering(true)
       el.src = `/api/yt-audio?url=${encodeURIComponent(ytUrl)}`
       el.load()
 
@@ -312,7 +356,7 @@ export default function Player({ currentSong, onAudioContextChange, onAnalyserCh
             step={1}
             onValueChange={handleSeek}
             className="w-full"
-            disabled={!currentSong}
+            disabled={!currentSong || isBuffering}
           />
           <div className="flex justify-between text-sm text-slate-400">
             <span>{formatTime(currentTime)}</span>
@@ -323,13 +367,23 @@ export default function Player({ currentSong, onAudioContextChange, onAnalyserCh
         <div className="flex items-center justify-center space-x-4">
           <Button
             onClick={togglePlay}
-            disabled={!currentSong}
+            disabled={!currentSong || isBuffering}
             size="lg"
             className="bg-purple-600 hover:bg-purple-700 rounded-full w-12 h-12"
           >
             {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
           </Button>
         </div>
+
+        {isBuffering && (
+          <div className="flex items-center justify-center text-slate-300 text-sm">
+            <svg className="animate-spin mr-2 h-4 w-4 text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            Loading YouTube audio...
+          </div>
+        )}
 
         <div className="flex items-center space-x-2">
           <Button onClick={toggleMute} variant="ghost" size="sm" className="text-slate-400 hover:text-white">

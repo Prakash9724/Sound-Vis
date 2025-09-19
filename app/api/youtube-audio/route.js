@@ -1,4 +1,4 @@
-import ytdl from "ytdl-core"
+import ytdl from "@distube/ytdl-core"
 import { Readable } from "stream"
 
 export const dynamic = "force-dynamic"

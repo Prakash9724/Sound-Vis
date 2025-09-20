@@ -31,11 +31,23 @@ export default async function handler(req, res) {
 
     const info = await ytdl.getInfo(normalized)
     const audioOnly = ytdl.filterFormats(info.formats, "audioonly") || []
-    // Prefer MP4/M4A container when available, else fallback to webm/opus
-    const mp4First = audioOnly.find((f) => (f.container === "mp4") || (f.mimeType || "").includes("audio/mp4"))
-    const chosen = mp4First || audioOnly[0]
+    
+    if (audioOnly.length === 0) {
+      res.status(404).send("No audio stream available")
+      return
+    }
+
+    // Find the best audio format
+    let chosen = audioOnly.find((f) => 
+      (f.container === "mp4") || 
+      (f.mimeType || "").includes("audio/mp4")
+    ) || audioOnly.find((f) => 
+      (f.container === "webm") || 
+      (f.mimeType || "").includes("audio/webm")
+    ) || audioOnly[0]
+
     if (!chosen) {
-      res.status(500).send("No audio stream available")
+      res.status(404).send("No valid audio format found")
       return
     }
 
@@ -45,34 +57,31 @@ export default async function handler(req, res) {
     res.setHeader("X-Content-Type-Options", "nosniff")
     res.setHeader("Content-Disposition", "inline; filename=audio.m4a")
 
-    const contentType = chosen.mimeType || (chosen.container === "mp4" ? "audio/mp4; codecs=\"mp4a.40.2\"" : "audio/webm; codecs=\"opus\"")
+    const contentType = chosen.mimeType || 
+      (chosen.container === "mp4" ? "audio/mp4; codecs=\"mp4a.40.2\"" : 
+       chosen.container === "webm" ? "audio/webm; codecs=\"opus\"" : 
+       "audio/mpeg")
     res.setHeader("Content-Type", contentType)
 
-    // If ytdl exposes content length, forward it
     const len = Number(chosen.contentLength || 0)
     if (!Number.isNaN(len) && len > 0) {
       res.setHeader("Content-Length", String(len))
     }
 
-    // Always send 200 OK (avoid partial content issues)
     res.status(200)
 
-    const commonHeaders = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Accept': '*/*',
-      'Origin': 'https://www.youtube.com',
-      'Referer': 'https://www.youtube.com/'
-    }
-
     const stream = ytdl(normalized, {
-      quality: "highestaudio",
+      quality: "lowestaudio",
       filter: "audioonly",
       highWaterMark: 1 << 25,
       format: chosen,
       requestOptions: {
         headers: {
-          ...commonHeaders,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': '*/*',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Origin': 'https://www.youtube.com',
+          'Referer': 'https://www.youtube.com/',
           ...(req.headers.range ? { Range: req.headers.range } : {}),
         },
       },
@@ -86,7 +95,16 @@ export default async function handler(req, res) {
     stream.pipe(res)
   } catch (err) {
     console.error('/pages/api/yt-audio error', err)
-    res.status(500).send(typeof err?.message === 'string' ? err.message : 'Failed to fetch audio')
+    
+    if (err.message && err.message.includes('Sign in to confirm')) {
+      res.status(403).send('YouTube requires authentication. Please try again later.')
+    } else if (err.message && err.message.includes('No audio stream')) {
+      res.status(404).send('No audio stream available for this video.')
+    } else if (err.message && err.message.includes('Video unavailable')) {
+      res.status(404).send('Video is unavailable or private.')
+    } else {
+      res.status(500).send(typeof err?.message === 'string' ? err.message : 'Failed to fetch audio')
+    }
   }
 }
 

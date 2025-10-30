@@ -1,0 +1,97 @@
+1. Purpose
+
+The purpose of this product is to create a web-based platform where users can upload audio files or provide YouTube links, and the system will visualize the sound in real-time. The platform is designed for music lovers, developers, and learners who want to see how sound frequencies and waveforms behave dynamically.
+
+2. Overview
+
+The platform will:
+
+Let users upload audio files (MP3/WAV) or paste YouTube links.
+
+Play the selected audio in a custom music player.
+
+Generate real-time visualizations (waveform and frequency spectrum) using the Web Audio API.
+
+Provide a clean, minimal, and modern UI with Tailwind CSS.
+
+It will be publicly accessible (no login/register required).
+
+3. Core Features
+
+Audio Upload → User can upload songs from their device.
+
+YouTube Link Input → User can paste a link, which plays through the YouTube IFrame API.
+
+Music Player → Basic controls: play, pause, seek, volume.
+
+Visualizer → Dynamic, canvas-based visualizer with two modes:
+
+Waveform (oscilloscope style)
+
+Frequency Bars (spectrum style)
+
+Song List → Display list of uploaded songs and links in the interface.
+
+4. User Flow
+
+User opens the platform.
+
+User uploads a file OR pastes a YouTube link.
+
+The uploaded audio/link appears in a list.
+
+User selects an item → playback starts.
+
+Visualization activates and reacts to the sound in real time.
+
+User can switch visualization mode (waveform ↔ frequency bars).
+
+5. UI/UX Requirements
+
+Minimal, modern, responsive design with Tailwind CSS.
+
+Components Breakdown:
+
+UploadForm → For file upload and YouTube link input.
+
+SongList → Shows all uploaded/linked songs.
+
+Player → Audio controls.
+
+Visualizer → Canvas element rendering frequency/wave data.
+
+Color scheme: Dark background with vibrant colors for visualizer.
+
+6. Technical Requirements
+
+Frontend Only (No Backend)
+
+Tech Stack:
+
+React.js (JSX only, no TypeScript)
+
+Tailwind CSS for styling
+
+Web Audio API for visualization
+
+YouTube IFrame API for external link playback
+
+Local state management for songs list (no database).
+
+7. Constraints / Non-Goals
+
+No user authentication (no login/register).
+
+No backend or database.
+
+No permanent storage (songs exist only in current session).
+
+8. Success Criteria
+
+User can upload an audio file and see real-time waveform visualization.
+
+User can paste a YouTube link and play it inside the app.
+
+Visualizations (waveform & frequency bars) respond smoothly to the audio.
+
+The interface remains responsive and visually appealing.

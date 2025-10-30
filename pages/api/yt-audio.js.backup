@@ -1,0 +1,116 @@
+import ytdl from "@distube/ytdl-core"
+
+function normalizeYoutubeUrl(raw) {
+  try {
+    const u = new URL(raw)
+    if (u.hostname === "youtu.be") {
+      const id = u.pathname.replace("/", "").trim()
+      if (id) return `https://www.youtube.com/watch?v=${id}`
+    }
+    if (/\.youtube\./.test(u.hostname)) {
+      const v = u.searchParams.get("v")
+      if (v) return `https://www.youtube.com/watch?v=${v}`
+    }
+  } catch {}
+  return raw
+}
+
+export default async function handler(req, res) {
+  try {
+    const urlParam = (req.query.url || "").toString()
+    if (!urlParam) {
+      res.status(400).send("Missing url")
+      return
+    }
+
+    const normalized = normalizeYoutubeUrl(urlParam)
+    if (!ytdl.validateURL(normalized)) {
+      res.status(400).send("Invalid YouTube URL")
+      return
+    }
+
+    const info = await ytdl.getInfo(normalized)
+    const audioOnly = ytdl.filterFormats(info.formats, "audioonly") || []
+    
+    if (audioOnly.length === 0) {
+      res.status(404).send("No audio stream available")
+      return
+    }
+
+    // Find the best audio format
+    let chosen = audioOnly.find((f) => 
+      (f.container === "mp4") || 
+      (f.mimeType || "").includes("audio/mp4")
+    ) || audioOnly.find((f) => 
+      (f.container === "webm") || 
+      (f.mimeType || "").includes("audio/webm")
+    ) || audioOnly[0]
+
+    if (!chosen) {
+      res.status(404).send("No valid audio format found")
+      return
+    }
+
+    // Headers
+    res.setHeader("Cache-Control", "no-store")
+    res.setHeader("Access-Control-Allow-Origin", "*")
+    res.setHeader("X-Content-Type-Options", "nosniff")
+    res.setHeader("Content-Disposition", "inline; filename=audio.m4a")
+
+    const contentType = chosen.mimeType || 
+      (chosen.container === "mp4" ? "audio/mp4; codecs=\"mp4a.40.2\"" : 
+       chosen.container === "webm" ? "audio/webm; codecs=\"opus\"" : 
+       "audio/mpeg")
+    res.setHeader("Content-Type", contentType)
+
+    const len = Number(chosen.contentLength || 0)
+    if (!Number.isNaN(len) && len > 0) {
+      res.setHeader("Content-Length", String(len))
+    }
+
+    res.status(200)
+
+    const stream = ytdl(normalized, {
+      quality: "lowestaudio",
+      filter: "audioonly",
+      highWaterMark: 1 << 25,
+      format: chosen,
+      requestOptions: {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': '*/*',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Origin': 'https://www.youtube.com',
+          'Referer': 'https://www.youtube.com/',
+          ...(req.headers.range ? { Range: req.headers.range } : {}),
+        },
+      },
+    })
+
+    stream.on("error", (err) => {
+      console.error("/pages/api/yt-audio stream error", err)
+      try { res.end() } catch {}
+    })
+
+    stream.pipe(res)
+  } catch (err) {
+    console.error('/pages/api/yt-audio error', err)
+    
+    if (err.message && err.message.includes('Sign in to confirm')) {
+      res.status(403).send('YouTube requires authentication. Please try again later.')
+    } else if (err.message && err.message.includes('No audio stream')) {
+      res.status(404).send('No audio stream available for this video.')
+    } else if (err.message && err.message.includes('Video unavailable')) {
+      res.status(404).send('Video is unavailable or private.')
+    } else {
+      res.status(500).send(typeof err?.message === 'string' ? err.message : 'Failed to fetch audio')
+    }
+  }
+}
+
+export const config = {
+  api: {
+    responseLimit: false,
+    bodyParser: false,
+  },
+} 

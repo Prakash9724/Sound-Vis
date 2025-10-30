@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Audio Fetcher</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+    }
+    #console {
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 300px;
+      overflow-y: scroll;
+      background: #f5f5f5;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>YouTube Audio Fetcher</h1>
+  <input type="text" id="ytUrl" placeholder="Paste YouTube URL here..." value="https://youtu.be/-2RAq5o5pwc">
+  <button onclick="fetchAudio()">Fetch Audio</button>
+  <audio id="audioPlayer" controls style="width: 100%; margin-top: 20px;"></audio>
+  <h3>Console Logs:</h3>
+  <div id="console"></div>
+
+  <script>
+    function logToConsole(message) {
+      const consoleDiv = document.getElementById('console');
+      consoleDiv.innerHTML += message + "\n";
+      console.log(message); // Also log to browser console
+    }
+
+    async function fetchAudio() {
+      const url = document.getElementById('ytUrl').value;
+      logToConsole(`Fetching audio for: ${url}`);
+
+      try {
+        const response = await fetch(`http://localhost:3000/api/yt-audio?url=${encodeURIComponent(url)}`);
+
+        if (!response.ok) {
+          const error = await response.text();
+          logToConsole(`Error: ${error}`);
+          return;
+        }
+
+        logToConsole("Audio fetched successfully!");
+
+        // Create a blob from the response
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        // Set the audio source
+        const audioPlayer = document.getElementById('audioPlayer');
+        audioPlayer.src = audioUrl;
+        audioPlayer.play().catch(e => logToConsole(`Playback error: ${e.message}`));
+
+      } catch (err) {
+        logToConsole(`Fetch error: ${err.message}`);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,453 @@
+[
+  {
+    "id": "TC001",
+    "title": "Upload MP3 file successfully",
+    "description": "Verify that users can upload an MP3 audio file and play it without errors.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the Music Visualizer Web Platform"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to the audio upload form"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid MP3 file from local device"
+      },
+      {
+        "type": "action",
+        "description": "Submit the upload form"
+      },
+      {
+        "type": "assertion",
+        "description": "Uploaded MP3 appears in the SongList"
+      },
+      {
+        "type": "action",
+        "description": "Select the uploaded MP3 in the SongList"
+      },
+      {
+        "type": "assertion",
+        "description": "Audio playback starts and sound is heard without errors"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Upload WAV file successfully",
+    "description": "Verify that users can upload a WAV audio file and play it without errors.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the Music Visualizer Web Platform"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to the audio upload form"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid WAV file from local device"
+      },
+      {
+        "type": "action",
+        "description": "Submit the upload form"
+      },
+      {
+        "type": "assertion",
+        "description": "Uploaded WAV appears in the SongList"
+      },
+      {
+        "type": "action",
+        "description": "Select the uploaded WAV in the SongList"
+      },
+      {
+        "type": "assertion",
+        "description": "Audio playback starts and sound is heard without errors"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Reject unsupported audio file formats",
+    "description": "Verify that uploading unsupported file formats is rejected with clear validation message.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the audio upload form"
+      },
+      {
+        "type": "action",
+        "description": "Select a file with unsupported extension (e.g., .txt, .exe)"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to submit the upload form"
+      },
+      {
+        "type": "assertion",
+        "description": "Form validation prevents submission"
+      },
+      {
+        "type": "assertion",
+        "description": "A clear error message indicates unsupported file type"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Accept valid YouTube URLs and play audio",
+    "description": "Verify that users can paste valid YouTube URLs and playback starts correctly using the YouTube IFrame API.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the YouTube URL input form"
+      },
+      {
+        "type": "action",
+        "description": "Paste a valid YouTube video URL"
+      },
+      {
+        "type": "action",
+        "description": "Submit the form"
+      },
+      {
+        "type": "assertion",
+        "description": "YouTube link appears in the SongList"
+      },
+      {
+        "type": "action",
+        "description": "Select the YouTube link from the SongList"
+      },
+      {
+        "type": "assertion",
+        "description": "Audio playback starts inside the app without errors"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Reject invalid or non-YouTube URLs in input",
+    "description": "Verify that non-YouTube or malformed URLs are rejected with appropriate validation messages.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the YouTube URL input form"
+      },
+      {
+        "type": "action",
+        "description": "Enter a non-YouTube URL or malformed URL"
+      },
+      {
+        "type": "action",
+        "description": "Submit the form"
+      },
+      {
+        "type": "assertion",
+        "description": "Form validation rejects the URL"
+      },
+      {
+        "type": "assertion",
+        "description": "User sees a clear error message indicating invalid YouTube URL"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Play, pause, and seek controls function correctly",
+    "description": "Verify the custom music player responds correctly to play, pause, and seek commands for all audio sources.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Select a track from SongList (local upload or YouTube)"
+      },
+      {
+        "type": "action",
+        "description": "Click the play button"
+      },
+      {
+        "type": "assertion",
+        "description": "Audio begins playing with audio and visualization"
+      },
+      {
+        "type": "action",
+        "description": "Click the pause button"
+      },
+      {
+        "type": "assertion",
+        "description": "Audio playback halts"
+      },
+      {
+        "type": "action",
+        "description": "Use the seek bar to jump to another position"
+      },
+      {
+        "type": "assertion",
+        "description": "Playback position updates correctly and audio plays from seeked time"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Volume control adjustment works smoothly",
+    "description": "Verify volume control slider adjusts audio output volume accurately for all tracks.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Play a track from SongList"
+      },
+      {
+        "type": "action",
+        "description": "Adjust the volume control slider from min to max"
+      },
+      {
+        "type": "assertion",
+        "description": "Audio volume changes smoothly and accordingly without distortion or errors"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Real-time audio visualization renders and toggles modes",
+    "description": "Verify the audio visualizer canvas updates in real-time and toggles between waveform and frequency bars modes correctly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Start playback of an audio track"
+      },
+      {
+        "type": "assertion",
+        "description": "Canvas displays accurate real-time waveform visualization"
+      },
+      {
+        "type": "action",
+        "description": "Toggle visualization mode to frequency bars"
+      },
+      {
+        "type": "assertion",
+        "description": "Canvas updates to show frequency bars visualization smoothly and accurately"
+      },
+      {
+        "type": "action",
+        "description": "Toggle visualization mode back to waveform"
+      },
+      {
+        "type": "assertion",
+        "description": "Canvas reverts successfully to waveform visualization"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Song list updates dynamically on add and remove",
+    "description": "Verify the SongList correctly reflects additions and removals of audio files and links and updates playback accordingly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Upload an audio file or input a YouTube URL"
+      },
+      {
+        "type": "assertion",
+        "description": "New song appears in the SongList"
+      },
+      {
+        "type": "action",
+        "description": "Remove a song from the SongList"
+      },
+      {
+        "type": "assertion",
+        "description": "Song is removed from the SongList immediately"
+      },
+      {
+        "type": "action",
+        "description": "If removed song was playing, verify playback updates to next available song or stops"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Session state maintains without backend or login",
+    "description": "Verify that the application maintains the current list of songs and playback state locally during the session and resets on page refresh.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Add multiple songs via upload and YouTube link"
+      },
+      {
+        "type": "assertion",
+        "description": "SongList displays all added songs"
+      },
+      {
+        "type": "action",
+        "description": "Refresh the browser page"
+      },
+      {
+        "type": "assertion",
+        "description": "SongList resets to empty state"
+      },
+      {
+        "type": "assertion",
+        "description": "No songs or playback persist after refresh since no backend or storage is used"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "UI renders responsively across devices",
+    "description": "Verify the user interface adapts and renders correctly on various screen sizes and devices using Tailwind CSS responsiveness.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the app on desktop screen size"
+      },
+      {
+        "type": "assertion",
+        "description": "All UI components display with correct layout and no overflow or clipping"
+      },
+      {
+        "type": "action",
+        "description": "Open the app on tablet-sized screen"
+      },
+      {
+        "type": "assertion",
+        "description": "UI adjusts layout suitably with all controls accessible"
+      },
+      {
+        "type": "action",
+        "description": "Open the app on mobile screen size"
+      },
+      {
+        "type": "assertion",
+        "description": "UI remains usable and visually consistent with no hidden elements"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Theme toggling between dark and light modes works correctly",
+    "description": "Verify that user can toggle between dark and light themes using the Theme Provider and UI updates accordingly.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the app with default theme"
+      },
+      {
+        "type": "assertion",
+        "description": "UI loads with default theme colors (dark or light)"
+      },
+      {
+        "type": "action",
+        "description": "Toggle theme control to switch to alternate theme"
+      },
+      {
+        "type": "assertion",
+        "description": "UI colors and components update to reflect new theme promptly"
+      },
+      {
+        "type": "action",
+        "description": "Verify accessibility of theme toggle element"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Removing currently playing song updates playback correctly",
+    "description": "Verify that when the currently playing song is removed from the SongList, the player updates playback to next available song or stops without errors.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Play a song from the SongList"
+      },
+      {
+        "type": "action",
+        "description": "Remove the currently playing song from the SongList"
+      },
+      {
+        "type": "assertion",
+        "description": "Playback switches to the next song in list if present"
+      },
+      {
+        "type": "assertion",
+        "description": "If no more songs exist playback stops gracefully"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "File Upload form validation handles empty submission",
+    "description": "Verify that submitting the upload form without selecting a file or entering a YouTube URL is prevented with proper validation message.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the upload form"
+      },
+      {
+        "type": "action",
+        "description": "Submit the form without selecting a file or entering a URL"
+      },
+      {
+        "type": "assertion",
+        "description": "Form submission is blocked"
+      },
+      {
+        "type": "assertion",
+        "description": "User sees an error message prompting input requirement"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "User interface buttons respond to keyboard and mouse",
+    "description": "Verify that all interactive UI components (buttons, sliders) are operable via mouse click and keyboard navigation for accessibility.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Use tab key to navigate through player controls and buttons"
+      },
+      {
+        "type": "assertion",
+        "description": "Focus moves correctly in logical order to all interactive elements"
+      },
+      {
+        "type": "action",
+        "description": "Activate each button using keyboard (Enter/Space) and mouse clicks"
+      },
+      {
+        "type": "assertion",
+        "description": "Buttons trigger their respective actions correctly"
+      }
+    ]
+  }
+]

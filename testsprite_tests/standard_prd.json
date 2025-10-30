@@ -1,0 +1,133 @@
+{
+  "meta": {
+    "project": "Music Visualizer Web Platform",
+    "date": "2025-09-13",
+    "prepared_by": "Software Development Manager"
+  },
+  "product_overview": "A web-based platform enabling users to upload audio files or input YouTube links to play music with dynamic real-time visualizations of sound frequencies and waveforms. Designed for music enthusiasts and learners, it features a modern, minimal, and responsive UI to enhance interaction without requiring user authentication.",
+  "core_goals": [
+    "Allow users to upload MP3 or WAV audio files from their device.",
+    "Enable users to paste and play YouTube links via the YouTube IFrame API.",
+    "Provide a custom music player with essential controls: play, pause, seek, and volume adjustment.",
+    "Render real-time audio visualizations using the Web Audio API with multiple modes including waveform and frequency bars.",
+    "Display and manage a list of uploaded audio files and YouTube links for easy playback selection.",
+    "Ensure a minimal, modern, responsive user interface using Tailwind CSS without requiring user login or permanent storage."
+  ],
+  "key_features": [
+    "Audio Upload form supporting MP3 and WAV files with validation.",
+    "YouTube URL input form validating and accepting YouTube links for playback.",
+    "Custom Music Player component with play, pause, seek, and volume controls.",
+    "Canvas-based Visualizer component rendering audio frequencies and waveforms in real time with mode toggling.",
+    "Song List management displaying uploaded and linked songs with play and remove actions.",
+    "Dark theme UI styled with Tailwind CSS and enhanced with Radix UI components for buttons, cards, sliders, inputs, and labels.",
+    "Theme Provider enabling dark and light mode support.",
+    "Use of Web Audio API for audio processing and visualization and YouTube IFrame API for external video playback integration.",
+    "No backend or database; all state and song management happen locally during the session."
+  ],
+  "user_flow_summary": [
+    "User opens the web platform to a clean and minimal interface.",
+    "User uploads an audio file or pastes a YouTube URL via the UploadForm component and submits.",
+    "The uploaded or linked audio is added to the SongList displayed on the interface.",
+    "User selects a track from the SongList, triggering playback in the Music Player.",
+    "Real-time audio visualization activates on the canvas with selectable modes (waveform and frequency bars).",
+    "User interacts with playback controls (play, pause, seek, volume) and can toggle visualization modes.",
+    "User may remove songs from the list, with playback updating accordingly, maintaining responsiveness throughout."
+  ],
+  "validation_criteria": [
+    "Users are able to upload audio files (MP3/WAV) and hear the audio playback without errors.",
+    "Users can paste valid YouTube URLs and successfully play audio from the link inside the app.",
+    "Audio visualizations respond accurately and smoothly to the playing audio in real-time, with mode toggling functioning correctly.",
+    "The SongList updates dynamically when files or links are added or removed and maintains state locally during the session.",
+    "UI components render consistently across devices with responsiveness ensured by Tailwind CSS.",
+    "No user login or backend server involvement is required to operate the platform.",
+    "Theme toggling between dark and light modes works seamlessly, ensuring good accessibility and user preference support."
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "JavaScript",
+      "React",
+      "Next.js",
+      "Tailwind CSS",
+      "Web Audio API",
+      "Canvas API",
+      "YouTube API"
+    ],
+    "features": [
+      {
+        "name": "Music Visualizer App",
+        "description": "Main application component that manages state and renders the music visualizer interface",
+        "files": [
+          "app/page.jsx"
+        ]
+      },
+      {
+        "name": "Audio Player",
+        "description": "Handles audio playback for both local files and YouTube videos with Web Audio API integration",
+        "files": [
+          "components/Player.jsx"
+        ]
+      },
+      {
+        "name": "Audio Visualizer",
+        "description": "Canvas-based audio visualization with multiple modes (spectrum, waveform, circular, particles, ripple, spiral, fireworks, galaxy)",
+        "files": [
+          "components/Visualizer.jsx"
+        ]
+      },
+      {
+        "name": "File Upload Form",
+        "description": "Handles local file uploads and YouTube URL input with validation",
+        "files": [
+          "components/UploadForm.jsx"
+        ]
+      },
+      {
+        "name": "Song List Management",
+        "description": "Displays and manages the list of uploaded songs with play/remove functionality",
+        "files": [
+          "components/SongList.jsx"
+        ]
+      },
+      {
+        "name": "YouTube Audio API",
+        "description": "Backend API endpoint for streaming YouTube audio using ytdl-core",
+        "files": [
+          "pages/api/yt-audio.js"
+        ]
+      },
+      {
+        "name": "UI Components",
+        "description": "Reusable UI components built with Radix UI and styled with Tailwind CSS",
+        "files": [
+          "components/ui/button.tsx",
+          "components/ui/card.tsx",
+          "components/ui/slider.tsx",
+          "components/ui/input.tsx",
+          "components/ui/label.tsx"
+        ]
+      },
+      {
+        "name": "Theme Provider",
+        "description": "Theme management for dark/light mode support",
+        "files": [
+          "components/theme-provider.tsx"
+        ]
+      },
+      {
+        "name": "Utility Functions",
+        "description": "Common utility functions for class name merging and other helpers",
+        "files": [
+          "lib/utils.ts"
+        ]
+      },
+      {
+        "name": "Custom Hooks",
+        "description": "Custom React hooks for mobile detection and toast notifications",
+        "files": [
+          "hooks/use-mobile.ts",
+          "hooks/use-toast.ts"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "loginUser": "prakashpatel@gmail.com",
+  "loginPassword": "9pr@kash",
+  "executionArgs": {
+    "projectName": "SoundVisualizer",
+    "projectPath": "D:\\ReactJs Projects\\SoundVisualizer",
+    "testIds": [],
+    "additionalInstruction": "Test the music visualizer application thoroughly, including audio playback, visualization modes, file uploads, and YouTube integration",
+    "envs": {
+      "API_KEY": "sk-user-_Zbg18e6nTI-WlgbTkY_X2v990_ECMui8lg0T5RoHEHieREUvhYf9wioKOuJj_WdQk6vXGSPT5PmJLYsnjDsSH3mCG-ot2XeOcXMhWcQPuE4zQPCqoa4uyG7kYI61qwwen0"
+    }
+  }
+}

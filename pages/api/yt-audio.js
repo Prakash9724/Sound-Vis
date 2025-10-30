@@ -1,110 +1,83 @@
-import ytdl from "@distube/ytdl-core"
+﻿//not working properly 
 
-function normalizeYoutubeUrl(raw) {
-  try {
-    const u = new URL(raw)
-    if (u.hostname === "youtu.be") {
-      const id = u.pathname.replace("/", "").trim()
-      if (id) return `https://www.youtube.com/watch?v=${id}`
-    }
-    if (/\.youtube\./.test(u.hostname)) {
-      const v = u.searchParams.get("v")
-      if (v) return `https://www.youtube.com/watch?v=${v}`
-    }
-  } catch {}
-  return raw
-}
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs';
+import path from 'path';
+
+const execAsync = promisify(exec);
 
 export default async function handler(req, res) {
   try {
-    const urlParam = (req.query.url || "").toString()
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Range");
+
+    if (req.method === "OPTIONS") {
+      res.status(204).end();
+      return;
+    }
+
+    const urlParam = (req.query.url || "").toString();
     if (!urlParam) {
-      res.status(400).send("Missing url")
-      return
+      res.status(400).send("Missing URL");
+      return;
     }
 
-    const normalized = normalizeYoutubeUrl(urlParam)
-    if (!ytdl.validateURL(normalized)) {
-      res.status(400).send("Invalid YouTube URL")
-      return
+    // Extract YouTube video ID
+    let videoId;
+    try {
+      const urlObj = new URL(urlParam);
+      if (urlObj.hostname === "youtu.be") {
+        videoId = urlObj.pathname.replace("/", "").split("?")[0];
+      } else if (urlObj.hostname.includes("youtube.com")) {
+        videoId = urlObj.searchParams.get("v");
+      }
+    } catch (e) {
+      res.status(400).send("Invalid YouTube URL");
+      return;
     }
 
-    const info = await ytdl.getInfo(normalized)
-    const audioOnly = ytdl.filterFormats(info.formats, "audioonly") || []
-    
-    if (audioOnly.length === 0) {
-      res.status(404).send("No audio stream available")
-      return
+    if (!videoId) {
+      res.status(400).send("Invalid YouTube URL");
+      return;
     }
 
-    // Find the best audio format
-    let chosen = audioOnly.find((f) => 
-      (f.container === "mp4") || 
-      (f.mimeType || "").includes("audio/mp4")
-    ) || audioOnly.find((f) => 
-      (f.container === "webm") || 
-      (f.mimeType || "").includes("audio/webm")
-    ) || audioOnly[0]
-
-    if (!chosen) {
-      res.status(404).send("No valid audio format found")
-      return
+    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    const cookiesPath = path.join(process.cwd(), 'pages', 'api', 'cookie.txt');
+    if (!fs.existsSync(cookiesPath)) {
+      res.status(500).send("Error: pages/api/cookie.txt not found. Please export your YouTube cookies and save as 'pages/api/cookie.txt'.");
+      return;
     }
 
-    // Headers
-    res.setHeader("Cache-Control", "no-store")
-    res.setHeader("Access-Control-Allow-Origin", "*")
-    res.setHeader("X-Content-Type-Options", "nosniff")
-    res.setHeader("Content-Disposition", "inline; filename=audio.m4a")
+    // Use yt-dlp with cookies
+    const { stdout, stderr } = await execAsync(
+      `yt-dlp --no-check-certificate --cookies "${cookiesPath}" -x --audio-format mp3 -o - "${videoUrl}"`
+    );
 
-    const contentType = chosen.mimeType || 
-      (chosen.container === "mp4" ? "audio/mp4; codecs=\"mp4a.40.2\"" : 
-       chosen.container === "webm" ? "audio/webm; codecs=\"opus\"" : 
-       "audio/mpeg")
-    res.setHeader("Content-Type", contentType)
-
-    const len = Number(chosen.contentLength || 0)
-    if (!Number.isNaN(len) && len > 0) {
-      res.setHeader("Content-Length", String(len))
+    // Error handling
+    if (
+      (stderr && !stderr.includes("WARNING:")) ||
+      (stderr && stderr.toLowerCase().includes('sign in to confirm you’re not a bot')) ||
+      (stderr && stderr.toLowerCase().includes('error')) ||
+      (stdout && stdout.toLowerCase().includes('error'))
+    ) {
+      if (stderr.toLowerCase().includes('sign in to confirm you’re not a bot')) {
+        res.status(403).send("YouTube is blocking automated requests for this video. Please export a fresh cookies.txt while signed in, or try another video.");
+      } else {
+        res.status(500).send(`yt-dlp Error: ${stderr}`);
+      }
+      return;
     }
 
-    res.status(200)
+    // Set headers and send audio
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Content-Disposition", `inline; filename="audio.mp3"`);
+    res.send(stdout);
 
-    const stream = ytdl(normalized, {
-      quality: "lowestaudio",
-      filter: "audioonly",
-      highWaterMark: 1 << 25,
-      format: chosen,
-      requestOptions: {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': '*/*',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Origin': 'https://www.youtube.com',
-          'Referer': 'https://www.youtube.com/',
-          ...(req.headers.range ? { Range: req.headers.range } : {}),
-        },
-      },
-    })
-
-    stream.on("error", (err) => {
-      console.error("/pages/api/yt-audio stream error", err)
-      try { res.end() } catch {}
-    })
-
-    stream.pipe(res)
   } catch (err) {
-    console.error('/pages/api/yt-audio error', err)
-    
-    if (err.message && err.message.includes('Sign in to confirm')) {
-      res.status(403).send('YouTube requires authentication. Please try again later.')
-    } else if (err.message && err.message.includes('No audio stream')) {
-      res.status(404).send('No audio stream available for this video.')
-    } else if (err.message && err.message.includes('Video unavailable')) {
-      res.status(404).send('Video is unavailable or private.')
-    } else {
-      res.status(500).send(typeof err?.message === 'string' ? err.message : 'Failed to fetch audio')
-    }
+    console.error("API Error:", err.message);
+    res.status(500).send(`Error: ${err.message}`);
   }
 }
 
@@ -113,4 +86,4 @@ export const config = {
     responseLimit: false,
     bodyParser: false,
   },
-} 
+};

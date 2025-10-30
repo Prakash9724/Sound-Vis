@@ -67,7 +67,7 @@ export default function UploadForm({ onAddSong }) {
         </div>
 
         {/* YouTube URL */}
-        <form onSubmit={handleYouTubeSubmit}>
+        {/* <form onSubmit={handleYouTubeSubmit}>
           <Label htmlFor="youtube-url" className="text-slate-300">
             YouTube URL
           </Label>
@@ -84,7 +84,7 @@ export default function UploadForm({ onAddSong }) {
               Add
             </Button>
           </div>
-        </form>
+        </form> */}
       </CardContent>
     </Card>
   )
